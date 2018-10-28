@@ -6,33 +6,63 @@ public class SwordAi : MonoBehaviour {
 
     GameObject player;
     Vector3 startPos;
-    double radius;
-    float speed;
     bool headingLeft;
     bool facingLeft;
     bool attacking;
-    Transform pivot;
+    Transform sword;
     int count;
-    int hp;
+    public int hp;
+    public double radius;
+    public float speed;
+    public int swingDegreePerFrame;
+    public int swingFrames;
+    public int delayAfterAttack;
 
 	// Use this for initialization
 	void Start () {
         startPos = transform.position;
+
+        //Requires a player object to function
         player = GameObject.FindGameObjectWithTag("Player");
+
+        //This picks which direction it starts moving in, not important to change unless this is the 1st enemy on the screen
         headingLeft = false;
-        facingLeft = false;
-        radius = 1.3;
-        speed = .03f;
+
+        //Which direction the original sprite is facing
+        facingLeft = true;
+
+        //How far the ai will walk from its beginning point
+        //radius = 1.3;
+        //How fast it will do that walk
+        //speed = .03f;
+
+        //An internal variable, don't change
         attacking = false;
+
+        //Requires a child with the 'Sword' tag
         foreach(Transform child in transform)
         {
-            if (child.tag == "Pivot")
+            if (child.tag == "Sword")
             {
-                pivot = child;
+                sword = child;
             }
         }
-        int count = 0;
-        hp = 3;
+        //Don't edit, this will make wonky behavior the first time it swings.
+        //If you want to make them more fair to fight, set this to a negative number. That will be added frame delay the first time the enemy attacks, but they'll act normally after 1 attack.
+        count = 0;
+
+        //The hp of the enemy
+        //hp = 3;
+
+        //This variable determines how far the sword swings per frame on the downswing
+        //swingDegreePerFrame = 10;
+
+        //This variable is how many frames will be spent swinging. The multiple of this and swingDegreePerFrame is how far the total downswing is.
+        //swingFrames = 10;
+
+        //delayAfterAttack is how many frames the ai will hold its position after attacking
+        //delayAfterAttack = 125;
+
 	}
 	
 	// Update is called once per frame
@@ -41,15 +71,15 @@ public class SwordAi : MonoBehaviour {
         //Set the enemy to face the player
         if (!attacking)
         {
-            if ((player.transform.position.x < transform.position.x) && (transform.localScale.x == 1))
+            if ((player.transform.position.x > transform.position.x) && (transform.localScale.x == 1))
             {
-                facingLeft = true;
+                facingLeft = false;
                 transform.localScale = new Vector3(-1, 1, 1);
             }
-            else if ((player.transform.position.x > transform.position.x) && (transform.localScale.x == -1))
+            else if ((player.transform.position.x < transform.position.x) && (transform.localScale.x == -1))
             {
                 transform.localScale = new Vector3(1, 1, 1);
-                facingLeft = false;
+                facingLeft = true;
             }
         }
 
@@ -72,23 +102,38 @@ public class SwordAi : MonoBehaviour {
                 else
                 {
 
-                    float zRotation = pivot.rotation.eulerAngles.z;
-                    if (((facingLeft && zRotation < 100) || (!facingLeft && zRotation > 260)) || zRotation == 0)
+                    if (count < (25 + swingFrames))
                     {
-                        pivot.Rotate(new Vector3(0, 0, -20));
+                        //Rotate the sword
+                        if (facingLeft)
+                        {
+                            sword.RotateAround(transform.position, new Vector3(0, 0, 1), swingDegreePerFrame);
+                        }
+                        else
+                        {
+                            sword.RotateAround(transform.position, new Vector3(0, 0, 1), -swingDegreePerFrame);
+                        }
+                        count++;
                     }
                     else
                     {
                         //This code executes once the slash is done
-                        if (count < 125)
+                        if (count < (delayAfterAttack + swingFrames))
                         {
+                            //Hold position to create delay
                             count++;
                         }
                         else
                         {
                             //Reset!
-
-                            pivot.eulerAngles = new Vector3(0, 0, 0);
+                            if (facingLeft)
+                            {
+                                sword.RotateAround(transform.position, new Vector3(0, 0, 1), -(swingFrames * swingDegreePerFrame));
+                            }
+                            else
+                            {
+                                sword.RotateAround(transform.position, new Vector3(0, 0, 1), (swingFrames * swingDegreePerFrame));
+                            }
                             attacking = false;
                             count = 0;
                         }
@@ -159,6 +204,7 @@ public class SwordAi : MonoBehaviour {
 
     void die()
     {
+        //Turns off sprites and colliders so that the AI is harmless
         SpriteRenderer[] all = GetComponentsInChildren<SpriteRenderer>();
         for (int i = 0; i < all.Length; i++)
         {
