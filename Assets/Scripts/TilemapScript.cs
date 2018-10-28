@@ -9,6 +9,7 @@ public class TilemapScript : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        // Doesn't work
         tileCollider = GetComponent<Collider2D>();
 
         swords = GameObject.FindGameObjectsWithTag("Sword");

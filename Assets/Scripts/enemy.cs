@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class enemy : MonoBehaviour {
 
+    public float distToPlayer;
 
     private Vector3 startPos; //position before each frame
     private Vector3 newPos; //position change during each frame
@@ -27,6 +28,8 @@ public class enemy : MonoBehaviour {
 
     void Start()
     {
+        distToPlayer = 5.0f;
+
         startPos = transform.position;
         mode = 0;
         upperRange = transform.position.y + 0.1f;
@@ -41,7 +44,7 @@ public class enemy : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(timer);
+        //Debug.Log(timer);
         if(mode == 0)
         {
             Neutral();
@@ -58,7 +61,7 @@ public class enemy : MonoBehaviour {
     void Neutral()
     {
         timer += 1;
-        if(Distance() < 10 && timer > 150)
+        if(Distance() < distToPlayer && timer > 150)
         {
             mode = 1; //switch to divebomb mode
             needIni = true;
